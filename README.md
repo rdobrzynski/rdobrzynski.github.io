@@ -1,1 +1,1 @@
-# rdobrzynski2021.github.io
+# Math 421. Statistical Analysis with R
