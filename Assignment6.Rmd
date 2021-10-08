@@ -163,7 +163,7 @@ d1 %>%  ggplot()+geom_point(mapping=aes(x=Date, y=vac_admin, color=Vaccine_Type)
 
 - Use `geom_line` to compare the popularity of all vaccines in New England by date.
 ```{r}
-d2 <-df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine'))%>% group_by(Date, Vaccine_Type) %>% summarise(vac_admin=mean(Doses_admin, na.rm=TRUE))
+d2 <-df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine'))%>% filter(Vaccine_Type=="Moderna"|Vaccine_Type=="Pfizer"|Vaccine_Type=="Janssen") %>% group_by(Date, Vaccine_Type) %>% summarise(vac_admin=mean(Doses_admin, na.rm=TRUE))
 d2 %>% ggplot()+geom_line(mapping=aes(x=Date, y=vac_admin, color=Vaccine_Type))
 ```
 
@@ -176,13 +176,14 @@ d2 %>% ggplot()+geom_line(mapping=aes(x=Months, y=vac_admin, color=Vaccine_Type)
 
 - Use `geom_line` to compare states in New England in term of the total vaccine administered by date. 
 ```{r}
-df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine')) %>% ggplot()+geom_line(mapping=aes(x=Date,y=Doses_admin,color=Province_State))
+df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine')) %>% filter(Vaccine_Type=="All") %>%  ggplot()+geom_line(mapping=aes(x=Date,y=Doses_admin,color=Province_State))
 ```
 
 - Use `geom_line` to compare states in New England in term of the total vaccine administered by month. 
 ```{r}
+library(lubridate)
 df$months <- month(df$Date)
-df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine')) %>% ggplot()+geom_line(mapping=aes(x=months,y=Doses_admin,color=Province_State))
+df%>% filter(Province_State==c('Massachusetts','Rhode Island','Vermont','New Hampshire','Maine')) %>% ggplot()+geom_line(mapping=aes(x=months,y=Doses_admin,color=Province_State))+labs(x='Months',y='Total Vaccine Administered',title='New England Vaccines')
 ```
 
 
