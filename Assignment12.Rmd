@@ -1,0 +1,127 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 12: Predictive Modeling - Part 3"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](fa2021_assignment12.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Blackboard.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+-------
+
+1. Install the package `mlbench` and use the follows to import the data
+
+```{r}
+library(mlbench)
+data(PimaIndiansDiabetes)
+df <- PimaIndiansDiabetes
+```
+
+- Set seed to be 2020. 
+- The target variable is `diabetes`
+- Partition the data into 80% training and 20% testing.  
+```{r}
+set.seed(2020)
+names(df)[9] <- 'target'
+library(caret)
+splitIndex <- createDataPartition(df$target, p = .80, 
+                                  list = FALSE)
+df_train <- df[ splitIndex,]
+df_test <- df[-splitIndex,]
+```
+
+-------
+
+2. Use cross-validation of 30 folds to tune random forest (method='rf').  What is the `mtry` value that produces the greatest accuracy?
+```{r}
+tuneGrid = expand.grid(mtry = 2:4)
+trControl = trainControl(method = "cv",
+                         number = 30)
+forest_rf <- train(target~., data=df_train, 
+                                method = "rf", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(forest_rf)
+print(forest_rf)
+#'Mtry' of 2 produces greatest accuracy.
+```
+ 
+-------
+
+3. Use cross-validation with of 30 folds to tune random forest (method='ranger').  What are the parameters that produce the greatest accuracy?
+```{r}
+#install.packages('ranger')
+library(caret)
+trControl = trainControl(method = "cv",
+                         number = 30)
+tuneGrid = expand.grid(mtry = 2:4,
+                       splitrule = c('gini', 'extratrees'),
+                       min.node.size = c(1:10))
+forest_ranger <- train(target~., data=df_train, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    tuneGrid = tuneGrid)
+plot(forest_ranger)
+print(forest_ranger)
+#The final values used for the model were mtry = 4, splitrule= extratrees and min.node.size = 5.
+```
+
+-------
+
+4. Go to https://topepo.github.io/caret/available-models.html and pick a classification model.  Tune the classification model using cross-validation of 30 folds. 
+```{r}
+getModelInfo('nnet')$nnet$parameters
+trControl = trainControl(method = "cv",
+                         number = 10)
+tuneGrid = expand.grid(size=0:5,decay=1.0e-5)
+nnetwork <- train(target~., data=df_train, 
+                    method = "nnet", 
+                    trControl = trControl,
+                    tuneGrid = tuneGrid)
+```
+
+-------
+
+5. Pick three models at [this link](https://topepo.github.io/caret/available-models.html) to compare using 15-fold cross validation method. Evaluate the accuracy of the final model on the test data. What is the best model?
+```{r}
+trControl = trainControl(method = "cv",
+                         number = 5)
+ada <- train(target~., data=df_train, 
+                                method = "ada", 
+                                trControl = trControl)
+qda <- train(target~., data=df_train, 
+                    method = "qda", 
+                                trControl = trControl)
+RFlda <- train(target~., data=df_train, 
+                                method = "RFlda", 
+                                trControl = trControl)
+results <- resamples(list('ada' = ada,
+                          'Qda' = qda,
+                          'RFlda'= RFlda))
+bwplot(results)
+#Best model seems to be Boosted Classification Trees (ada)
+```
+
+-------
+
+
+ 
+ 
+ 
