@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Midterm Project–Ryan Dobrzynski</title>
+    <meta charset="utf-8" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Midterm Project–Ryan Dobrzynski
+
+---
+
+Data Import
+
+```r
+library(tidyverse)
+```
+
+```
+## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
+```
+
+```
+## v ggplot2 3.3.5     v purrr   0.3.4
+## v tibble  3.1.5     v dplyr   1.0.7
+## v tidyr   1.1.4     v stringr 1.4.0
+## v readr   2.0.2     v forcats 0.5.1
+```
+
+```
+## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```r
+df&lt;-read_csv("midterm_data.csv")
+```
+
+```
+## Rows: 131478 Columns: 45
+```
+
+```
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr (29): asource, service, icu, ccu, dispub92, payer, trandb, randbg, randb...
+## dbl (15): yod, pay_ub92, age, sex, raceethn, provider, moa, yoa, mod, admtyp...
+## lgl  (1): bwght
+```
+
+```
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+---
+
+class: inverse, middle, center
+# Visualization Plots
+
+---
+
+```r
+df %&gt;% ggplot()+
+  geom_point(mapping = aes(x = df$los, y=df$tot))+labs(x="Length of Stay",y="Total Bill",title="Length of Stay vs Total Bill",caption="As length of stay increases, the total bill for the patient tends to increase.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+
+  geom_bar(mapping = aes(x = df$sex))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",title="Total Patients for each Sex",caption="Female has about 10,000 more patients than males.")
+```
+
+```
+## Warning: Removed 4 rows containing non-finite values (stat_count).
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_bar(mapping=aes(x=df$moa))+labs(x="Months of Admission",title="Total Patients for each Month",caption="The months are fairly even for admissions.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_col(mapping=aes(x=df$sex,y=df$los))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",y="Length of Stay",title="Length of Stay for each Sex",caption="Female stay slighlty longer than males.")
+```
+
+```
+## Warning: Removed 4 rows containing missing values (position_stack).
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="Age does not seem to be a factor in determining length of stay.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+facet_wrap(~df$sex)+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="1 is male and 2 is female, it appears there are 4 cases labeled as 9 as well.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_bar(mapping=aes(x=df$provider))+labs(x="Provider Number",title="Providers Total Patients",caption="Provider 7205 has the most patients.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$tot))+facet_wrap(~df$raceethn)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by Races",caption="For most of the races, it seems like youngest patients have the highest charge.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+df %&gt;% filter(pt_state %in% c("RI",'MA')) %&gt;% ggplot()+geom_point(mapping=aes(x=age,y=tot))+facet_wrap(~pt_state)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by State",caption="For both states, it seems like youngest patients have the highest charge.")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+library(lubridate)
+```
+
+```
+## 
+## Attaching package: 'lubridate'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     date, intersect, setdiff, union
+```
+
+```r
+df %&gt;%filter(pt_state %in% c("RI",'MA')) %&gt;% ggplot()+geom_bar(mapping=aes(x=pt_state))+labs(x="State",caption="There are far more patients from RI than MA.",title="Patients in RI and MA")
+```
+
+![](MidtermPres_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+![](MidtermPres_files/figure-html/unnamed-chunk-12-1.gif)&lt;!-- --&gt;
+---
+class: inverse, middle, center
+# Predictive Models
+---
+
+```r
+df$target&lt;- ifelse(df$tot&lt;=21854,"low","high")
+d &lt;- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'los','target')]
+d &lt;- d %&gt;% filter(sex!=9)
+d &lt;- d %&gt;% filter(raceethn!=' ') %&gt;% filter(admtype!=' ')
+d$raceethn &lt;- factor(d$raceethn)
+d$provider &lt;- factor(d$provider)
+d$admtype &lt;- factor(d$admtype)
+d$campus &lt;- factor(d$campus)
+d$sex &lt;- factor(d$sex)
+library(caret)
+splitIndex &lt;- createDataPartition(d$target, p = .05,                           list = FALSE)
+train &lt;- d[ splitIndex,]
+test &lt;- d[-splitIndex,]
+```
+---
+
+---                       
+![](MidtermPres_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+---
+
+```r
+pred &lt;- predict(forest_ranger, test)
+table(pred)
+```
+
+```
+## pred
+##  high   low 
+## 60465 60681
+```
+
+```r
+cm &lt;- confusionMatrix(data = pred, reference = as.factor(test$target), positive = "high")
+cm$overall[1]
+```
+
+```
+##  Accuracy 
+## 0.8199033
+```
+
+The best model appears to be the Random Forest. This model was used to predict the target variable in the test data set. The accuracy of the model was .82. 
+---
+A new Target variable was made that classifies whether a patient's stay was short or long based on the average length of stay. 
+
+```r
+df$Targ&lt;- ifelse(df$los &lt; 5,"short","long")
+df$Targ &lt;- factor(df$Targ)
+ds &lt;- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'tot','Targ')]
+ds &lt;- ds %&gt;% filter(sex!=9) %&gt;% filter(raceethn!=' ') %&gt;% filter(admtype!=' ')
+```
+---
+Data cleaned and split into training and test. 
+
+```r
+ds$provider &lt;- factor(ds$provider)
+ds$admtype &lt;- factor(ds$admtype)
+ds$campus &lt;- factor(ds$campus)
+ds$sex &lt;- factor(ds$sex)
+
+splitIndex1 &lt;- createDataPartition(ds$Targ, p =.05,                           list = FALSE)
+train1 &lt;- ds[ splitIndex1,]
+test1 &lt;- ds[-splitIndex1,]
+trControl1 = trainControl(method = "cv",
+                         number = 5)
+```
+---
+Three models were made to test which is the most accurate. 
+![](MidtermPres_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+---
+
+```r
+pred1 &lt;- predict(forest_ranger1, test1)
+
+cm1 &lt;- confusionMatrix(data = pred1, reference = test1$Targ, positive = "short")
+
+cm1$overall[1]
+```
+
+```
+##  Accuracy 
+## 0.8408284
+```
+
+The best model appears to be the Random Forest. This model was used to predict the target variable in the test data set. The accuracy of the model was .84.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

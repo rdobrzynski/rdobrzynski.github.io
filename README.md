@@ -29,4 +29,4 @@
 
 [Midterm Notebook](Midtermtoc.html)
 
-[Midterm Presentation](MidtermPresentation---Copy.html)
+[Midterm Presentation](MidtermPres.html)
