@@ -15,42 +15,306 @@ class: center, middle, inverse, title-slide
 
 ---
 
+
+```r
+library(tidyverse)
+```
+
+```
+## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
+```
+
+```
+## v ggplot2 3.3.5     v purrr   0.3.4
+## v tibble  3.1.5     v dplyr   1.0.7
+## v tidyr   1.1.4     v stringr 1.4.0
+## v readr   2.0.2     v forcats 0.5.1
+```
+
+```
+## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```r
+df&lt;-read_csv("midterm_data.csv")
+```
+
+```
+## Rows: 131478 Columns: 45
+```
+
+```
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr (29): asource, service, icu, ccu, dispub92, payer, trandb, randbg, randb...
+## dbl (15): yod, pay_ub92, age, sex, raceethn, provider, moa, yoa, mod, admtyp...
+## lgl  (1): bwght
+```
+
+```
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+
+---
 class: inverse, middle, center
 # Visualization Plots
 
 ---
-![mid1](C:/Users/student/Desktop/Math421/Math421/mid1.png)
+
+```r
+df %&gt;% ggplot()+
+  geom_point(mapping = aes(x = df$los, y=df$tot))+labs(x="Length of Stay",y="Total Bill",title="Length of Stay vs Total Bill",caption="As length of stay increases, the total bill for the patient tends to increase.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
 ---
-![mid2](C:/Users\student\Desktop\Math421\Math421\mid2.png)
+
+```r
+df %&gt;% ggplot()+
+  geom_bar(mapping = aes(x = df$sex))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",title="Total Patients for each Sex",caption="Female has about 10,000 more patients than males.")
+```
+
+```
+## Warning: Removed 4 rows containing non-finite values (stat_count).
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
 ---
-![mid3](C:/Users\student\Desktop\Math421\Math421\mid3.png)
+
+```r
+df %&gt;% ggplot()+geom_bar(mapping=aes(x=df$moa))+labs(x="Months of Admission",title="Total Patients for each Month",caption="The months are fairly even for admissions.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
 ---
-![mid4](C:/Users\student\Desktop\Math421\Math421\mid4.png)
+
+```r
+df %&gt;% ggplot()+geom_col(mapping=aes(x=df$sex,y=df$los))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",y="Length of Stay",title="Length of Stay for each Sex",caption="Female stay slighlty longer than males.")
+```
+
+```
+## Warning: Removed 4 rows containing missing values (position_stack).
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
 ---
-![mid5](C:/Users\student\Desktop\Math421\Math421\mid5.png)
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="Age does not seem to be a factor in determining length of stay.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
 ---
-![mid6](C:/Users\student\Desktop\Math421\Math421\mid6.png)
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+facet_wrap(~df$sex)+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="1 is male and 2 is female, it appears there are 4 cases labeled as 9 as well.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
 ---
-![mid7](C:/Users\student\Desktop\Math421\Math421\mid7.png)
+
+```r
+df %&gt;% ggplot()+geom_bar(mapping=aes(x=df$provider))+labs(x="Provider Number",title="Providers Total Patients",caption="Provider 7205 has the most patients.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
 ---
-![mid8](C:/Users\student\Desktop\Math421\Math421\mid8.png)
+
+```r
+df %&gt;% ggplot()+geom_point(mapping=aes(x=df$age,y=df$tot))+facet_wrap(~df$raceethn)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by Races",caption="For most of the races, it seems like youngest patients have the highest charge.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
 ---
-![mid9](C:/Users\student\Desktop\Math421\Math421\mid9.png)
+
+```r
+df %&gt;% filter(pt_state %in% c("RI",'MA')) %&gt;% ggplot()+geom_point(mapping=aes(x=age,y=tot))+facet_wrap(~pt_state)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by State",caption="For both states, it seems like youngest patients have the highest charge.")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
 ---
-![mid10](C:/Users\student\Desktop\Math421\Math421\mid10.png)
+
+```r
+df %&gt;%filter(pt_state %in% c("RI",'MA')) %&gt;% ggplot()+geom_bar(mapping=aes(x=pt_state))+labs(x="State",caption="There are far more patients from RI than MA.",title="Patients in RI and MA")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+
+```r
+library(lubridate)
+```
+
+```
+## 
+## Attaching package: 'lubridate'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     date, intersect, setdiff, union
+```
+
+```r
+library(gganimate)
+df$months&lt;-month.abb[df$moa]
+df %&gt;% filter(pt_state %in% c("RI",'MA')) %&gt;% ggplot(mapping=aes(x=moa,y=tot,color=pt_state))+geom_line()+
+  transition_reveal(moa)+labs(x="Month of Admission",y="Total Bills",color="State",title="Total Bills throughout the year")
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-12-1.gif)&lt;!-- --&gt;
 ---
 class: inverse, middle, center
 # Predictive Models
 ---
-![Results1](C:/Users\student\Desktop\Math421\Math421\results1.png)
+
+```r
+df$target&lt;- ifelse(df$tot&lt;=21854,"low","high")
+d &lt;- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'los','target')]
+d &lt;- d %&gt;% filter(sex!=9)
+d &lt;- d %&gt;% filter(raceethn!=' ') %&gt;% filter(admtype!=' ')
+d$raceethn &lt;- factor(d$raceethn)
+d$provider &lt;- factor(d$provider)
+d$admtype &lt;- factor(d$admtype)
+d$campus &lt;- factor(d$campus)
+d$sex &lt;- factor(d$sex)
+library(caret)
+```
+
+```
+## Loading required package: lattice
+```
+
+```
+## 
+## Attaching package: 'caret'
+```
+
+```
+## The following object is masked from 'package:purrr':
+## 
+##     lift
+```
+
+```r
+splitIndex &lt;- createDataPartition(d$target, p = .05,                           list = FALSE)
+train &lt;- d[ splitIndex,]
+test &lt;- d[-splitIndex,]
+```
 ---
 
 ```r
-#pred &lt;- predict(forest_ranger, test)
-#cm &lt;- confusionMatrix(data = pred, reference = as.factor(test$target), positive = "high")
-#cm$overall[1]
- #Accuracy 
-#0.823 
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+forest_ranger &lt;- train(target~., data=train, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    na.action=na.omit)
+
+tree_approach &lt;- train(target~., data=train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                       na.action=na.omit)
+glm &lt;- train(target~., data=train, 
+                                method = "glm", 
+                                trControl = trControl,  na.action=na.omit)
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+---                                
+
+```r
+results &lt;- resamples(list('Random Forest' = forest_ranger,
+                          'Decision Tree' = tree_approach,
+                          'Generalized Linear Model'= glm))
+bwplot(results)
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+---
+
+```r
+pred &lt;- predict(forest_ranger, test)
+table(pred)
+```
+
+```
+## pred
+##  high   low 
+## 60991 60155
+```
+
+```r
+cm &lt;- confusionMatrix(data = pred, reference = as.factor(test$target), positive = "high")
+cm$overall[1]
+```
+
+```
+##  Accuracy 
+## 0.8243112
 ```
 
 The best model appears to be the Random Forest. This model was used to predict the target variable in the test data set. The accuracy of the model was .82. 
@@ -58,30 +322,133 @@ The best model appears to be the Random Forest. This model was used to predict t
 A new Target variable was made that classifies whether a patient's stay was short or long based on the average length of stay. 
 
 ```r
-#mean_los &lt;- mean(df$los)
-#ds$Targ&lt;- ifelse(df$los&lt;5,"short","long")
-#ds$Targ &lt;- factor(ds$Targ)
+df$Targ&lt;- ifelse(df$los &lt; 5,"short","long")
+df$Targ &lt;- factor(df$Targ)
+ds &lt;- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'tot','Targ')]
+ds &lt;- ds %&gt;% filter(sex!=9) %&gt;% filter(raceethn!=' ') %&gt;% filter(admtype!=' ')
 ```
 ---
-![Results2](C:/Users\student\Desktop\Math421\Math421\results2.png)
----
-The best model appears to be the Random Forest. This model was used to predict the target variable in the test data set. The accuracy of the model was .84.
 
 ```r
-#cm1 &lt;- confusionMatrix(data = pred1, reference = test1$Targ, positive = "short")
+ds$provider &lt;- factor(ds$provider)
+ds$admtype &lt;- factor(ds$admtype)
+ds$campus &lt;- factor(ds$campus)
+ds$sex &lt;- factor(ds$sex)
 
-#cm1$overall[1]
-#Accuracy 
-#0.84 
+splitIndex1 &lt;- createDataPartition(ds$Targ, p =.05,                           list = FALSE)
+train1 &lt;- ds[ splitIndex1,]
+test1 &lt;- ds[-splitIndex1,]
+trControl1 = trainControl(method = "cv",
+                         number = 5)
 ```
 ---
-class: inverse, middle, center
-# Challenges and Fixes
----
-![error](C:/Users\student\Desktop\Math421\Math421\error.png)
 
-Error: Lengths must be equal in confusion matrix.
-Fix: Looked up the length for pred1 and test1, took a random sample from test1 to match the length of pred1
+```r
+forest_ranger1 &lt;- train(Targ~., data=train1, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    na.action=na.omit)
+
+tree_approach1 &lt;- train(Targ~., data=train1, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                       na.action=na.omit)
+glm1 &lt;- train(Targ~., data=train1, 
+                                method = "glm", 
+                                trControl = trControl,  na.action=na.omit)
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```
+## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from a rank-deficient fit may be misleading
+```
+
+```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+```
+
+```r
+results1 &lt;- resamples(list('Random Forest' = forest_ranger1,
+                          'Decision Tree' = tree_approach1,
+                          'Generalized Linear Model'= glm1))
+bwplot(results1)
+```
+
+![](MidtermPresentation_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+---
+
+```r
+pred1 &lt;- predict(forest_ranger1, test1)
+table(pred1)
+```
+
+```
+## pred1
+##  long short 
+## 34610 86536
+```
+
+```r
+length(pred1)
+```
+
+```
+## [1] 121146
+```
+
+```r
+cm1 &lt;- confusionMatrix(data = pred1, reference = test1$Targ, positive = "short")
+
+cm1$overall[1]
+```
+
+```
+##  Accuracy 
+## 0.8406468
+```
+
+The best model appears to be the Random Forest. This model was used to predict the target variable in the test data set. The accuracy of the model was .84.
+---
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
