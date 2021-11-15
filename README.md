@@ -27,6 +27,6 @@
 
 [Assignment 12](Assignment12.html)
 
-[Midterm Notebook](Midtermtoc.html)
+[Midterm Notebook](Midterm.html)
 
-[Midterm Presentation](MidtermPres.html)
+[Midterm Presentation](PresentationMid.html)

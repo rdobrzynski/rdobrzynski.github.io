@@ -1,0 +1,439 @@
+
+---
+title: "Fall 2021 - Math 421 - Midterm"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: united
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Instruction
+
+The midterm has two components: the Rmarkdown notebook (html) and the presentation.  We will do the presentation in class. Post both the notebook and the presentation on your Github page. 
+
+**The notebook:** The notebook should be created using `rmarkdown` (like other assignments). The notebook should have a title. It should have a table of content (TOC form) or in a tab form. Here are the samples Rmarkdown for [TOC form](fa2021_midterm_toc.Rmd) and [tab form](fa2021_midterm_tab.Rmd)
+
+
+**The Presentation:** Present your results in 5-10 minutes. To make the presentation using Rmarkdown, do the follows: 
+
+    - In Rstudio -> File -> New File -> R markdown
+    
+    - In the left panel, click to Presentation -> Click OK
+    
+    - Now you have an Rmarkdown that can be knitted to be a html presentation 
+    
+- You can also use borrow a template of our class slides presentations. For example, [this slide](https://bryantstats.github.io/math421/slides/6_viz_fa21_2.html) has this [Rmarkdown](https://bryantstats.github.io/math421/slides/6_viz_fa21_2.Rmd)    
+    
+- You do not need to rerun all the codes for the presentation. For example, to show the model comparison, you just need to show the image of the model comparison instead of running all the models again.
+    
+- To inset an image in a slide, use  `![](image.png)`
+
+- To turn off message and warning of a code cell, use:  `{r, message=FALSE, warning=FALSE}` for the cell. 
+
+**What to present**:
+
+  - Present Part 2 - Visualization
+  
+  - Present Question Question 4, 5 and 6 in Part 3.  
+  
+  - Present any errors/challenges you run into and how you fix/overcome them. 
+
+**Data:**  
+
+The data for the mid-term project is the Rhode Island Department of Health Hospital Discharge Data.  Each row of the data presents a patient. 
+
+Link: https://drive.google.com/open?id=15QNBf6YYKocK2nNIfpKDer58kQnCPNZJ 
+
+-------
+
+## I. Data Wranggling
+
+1. Download the data file `hdd0318cy.sas7bdat`.  
+
+2. Use `read_sas` in library `haven` to read the data. 
+```{r}
+#install.packages('tidyverse')
+#install.packages('haven')
+#install.packages('caret')
+library(haven)
+library(tidyverse)
+#df<-read_sas("hdd0318cy.sas7bdat")
+```
+    
+3. Filter the data to have only patients of the year 2018 (`yod==2018`)
+```{r}
+#df<-df%>%filter(yod==18)
+```
+    
+4. Select to work with only following variables: 
+
+```{r, eval=FALSE}
+#df1 <- df[,c("yod", "payfix","pay_ub92","age",  
+                      "sex","raceethn","provider","moa", 
+                      "yoa","mod","admtype", "asource" , 
+                      "preopday" ,"los", "service" , "icu","ccu",    
+                      "dispub92", "payer"  ,"drg","trandb", 
+                      "randbg","randbs","orr", "anes","seq",   
+                      "lab","dtest", "ther","blood","phar", 
+                      "other","patcon","bwght","total","tot" ,  
+                      "ecodub92","b_wt","pt_state","diag_adm","ancilar" ,
+                      "campus","er_fee","er_chrg","er_mode","obs_chrg",
+                      "obs_hour","psycchrg","nicu_day")]
+```
+ 
+
+*Notice*:  You may want to save the current data to your computer for easy access later.  To save the data file use `write_csv(df, 'midterm.csv')`, for example.  
+```{r}
+#write_csv(df1,'midterm.csv')
+df <- read_csv('midterm.csv')
+```
+
+5. What are variables that have missing values?
+```{r}
+colSums(is.na(df))
+
+```
+ 
+6. Remove all variables with missing values
+```{r}
+df <- df[,c("yod","pay_ub92","age",  
+                      "sex","raceethn","provider","moa", 
+                      "yoa","mod","admtype", "asource" , 
+                   "los", "service" , "icu","ccu",    
+                      "dispub92", "payer"  ,"drg","trandb", 
+                      "randbg","randbs","orr", "anes","seq",   
+                      "lab","dtest", "ther","blood","phar", 
+                      "other","patcon","bwght","total","tot" ,  
+                      "ecodub92","b_wt","pt_state","diag_adm","ancilar" ,
+                      "campus","er_fee","er_chrg","er_mode","obs_chrg",
+                      "psycchrg")]
+#write_csv(df,'midterm_data.csv')
+library(tidyverse)
+df<-read_csv("midterm_data.csv")
+```
+
+ 
+7. Refer to the data description in the file `HDD2015-18cy6-20-19.docx`, which variable recording the month of admission?, which variable recording the month of discharge?
+```{r}
+#'moa' records month of admission and 'mod' records month of discharge.
+```
+
+8. Which month admitted the most number of patients? Which month admitted the most number of male patients?
+```{r}
+table(df$moa)
+#October (Month 10) admitted the highest number of patients.
+male<-df%>%filter(sex==1)
+table(male$moa)
+#October (Month 10) admitted the highest number of male patients.
+```
+
+9. Which month has the most number of teenage female patients?
+```{r}
+library(tidyverse)
+femaleteen<-df%>%filter(sex==2)%>%filter(age<20)
+table(femaleteen$moa)
+#May admitted the most amount of teenage female patients.
+```
+
+10. Which provider has the most number of female patients in October? 
+```{r}
+female <- df %>% filter(sex==2)
+femaleoct<-female%>%filter(moa==10)
+table(femaleoct$provider)
+#Provider 7205 has the most number of female patients in October. 
+```
+
+11. Is female patients older than male patients, on average?
+```{r}
+mean(male$age)
+mean(female$age)
+#Males are slightly older on average.
+```
+
+12. Calculate the average age of patients by months. Which month has the oldest patients on average age?
+```{r}
+#install.packages('lubridate')
+library(lubridate)
+by(df$age, df$moa, mean, na.rm=TRUE)
+#January has the highest average age. 
+```
+
+13. What is the name of the provider that has the highest total charge?
+```{r}
+by(df$tot,df$provider,max,na.rm=TRUE)
+#Provider 7214 has the highest total charge.
+```
+
+14. What is the name of the provider that has the least total charge for teenage male on average?
+```{r}
+teen_male<-df %>% filter(sex==1) %>% filter(age<20)
+by(teen_male$tot,teen_male$provider,mean,na.rm=TRUE)
+#Provider 7201 has the least total charge on average. 
+```
+
+15. Calculate the length of stays by races.  Which race has the longest length of stays on average?
+```{r}
+by(df$los,df$raceethn,mean,na.rm=TRUE)
+#Race 9 has the longest average length of stay. 
+```
+
+16. On average, how much a 20 year-old male white get charged for staying 1 day?
+```{r}
+df %>% filter(sex==1) %>% filter(age==20) %>% filter(los==1) %>% summarise(mean(tot))
+#The average total cost is $15065.19
+```
+
+17. Write a paragraph to summarize the section and give your comments on the results. 
+
+This section was used to format the data into a resource that could be explored and analyzed. In order to do that, I had to remove variables, observations, and format the data. This allowed for me to then analyze the clean data set and gain some insights. It was interesting to see the differences in total patients and total payments to each provider. Further, based on sex and ethnicity I was able to identify some trends based on length of stay and month of arrival. 
+-------
+
+## II. Data Visualization
+
+Continue with the data from part I. 
+
+1. Provides at least 10 meaningful plots. Comments on the plots. All plots should have title, caption, appropriate labels on x and y-axis
+```{r}
+mid1 <- df %>% ggplot()+
+  geom_point(mapping = aes(x = df$los, y=df$tot))+labs(x="Length of Stay",y="Total Bill",title="Length of Stay vs Total Bill",caption="As length of stay increases, the total bill for the patient tends to increase.")
+ggsave(filename = 'Mid1.png', plot = mid1)
+
+```
+
+```{r}
+mid2 <- df %>% ggplot()+
+  geom_bar(mapping = aes(x = df$sex))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",title="Total Patients for each Sex",caption="Female has about 10,000 more patients than males.")
+ggsave(filename = 'Mid2.png', plot = mid2)
+
+```
+
+```{r}
+mid3 <- df %>% ggplot()+geom_bar(mapping=aes(x=df$moa))+labs(x="Months of Admission",title="Total Patients for each Month",caption="The months are fairly even for admissions.")
+ggsave(filename = 'Mid3.png', plot = mid3)
+
+```
+
+```{r}
+mid4 <- df %>% ggplot()+geom_col(mapping=aes(x=df$sex,y=df$los))+scale_x_continuous(limits = c(0,3))+labs(x="Sex: 1=Male, 2=Female",y="Length of Stay",title="Length of Stay for each Sex",caption="Female stay slighlty longer than males.")
+ggsave(filename = 'Mid4.png', plot = mid4)
+
+```
+
+```{r}
+mid5 <- df %>% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="Age does not seem to be a factor in determining length of stay.")
+ggsave(filename = 'Mid5.png', plot = mid5)
+
+```
+
+```{r}
+mid6 <- df %>% ggplot()+geom_point(mapping=aes(x=df$age,y=df$los))+facet_wrap(~df$sex)+labs(x="Age",y="Length of Stay",title="Age vs Length of Stay",caption="1 is male and 2 is female, it appears there are 4 cases labeled as 9 as well.")
+ggsave(filename = 'Mid6.png', plot = mid6)
+
+```
+
+```{r}
+mid7 <- df %>% ggplot()+geom_bar(mapping=aes(x=df$provider))+labs(x="Provider Number",title="Providers Total Patients",caption="Provider 7205 has the most patients.")
+ggsave(filename = 'Mid7.png', plot = mid7)
+
+```
+
+```{r}
+mid8 <- df %>% ggplot()+geom_point(mapping=aes(x=df$age,y=df$tot))+facet_wrap(~df$raceethn)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by Races",caption="For most of the races, it seems like youngest patients have the highest charge.")
+ggsave(filename = 'Mid8.png', plot = mid8)
+
+```
+
+```{r}
+mid9 <- df %>% filter(pt_state %in% c("RI",'MA')) %>% ggplot()+geom_point(mapping=aes(x=age,y=tot))+facet_wrap(~pt_state)+labs(x="Age",y="Total Charged",title="Age vs Total Charged by State",caption="For both states, it seems like youngest patients have the highest charge.")
+ggsave(filename = 'Mid9.png', plot = mid9)
+
+```
+
+```{r}
+mid10 <- df %>%filter(pt_state %in% c("RI",'MA')) %>% ggplot()+geom_bar(mapping=aes(x=pt_state))+labs(x="State",caption="There are far more patients from RI than MA.",title="Patients in RI and MA")
+ggsave(filename = 'Mid10.png', plot = mid10)
+
+```
+
+2. Make an animation plot. 
+```{r}
+#install.packages('gganimate')
+#install.packages('gifski')
+library(lubridate)
+library(gganimate)
+df$gender <- ifelse(df$sex<=1,"Male","Female")
+df %>% filter(sex!=9) %>% ggplot(aes(x=gender, 
+                 y=tot, 
+                 fill=tot)) + 
+  geom_col()+
+  ylim(0, 25000)+
+  transition_states(moa)+labs(title = 'Month: {closest_state}')
+
+```
+
+3. Write a paragraph to summarize the section and give your comments on the results. 
+
+This section was used to visualize the data using different plots and graphs. In doing this, I was able to identify some relationships and characteristics in the data that were previously hard to see. It was intersting to learn how age, sex, or race affected length of stay and payment. In addition, seeing which states patients came from was a valuable resource. 
+-------
+
+## III. Predictive Models
+
+Continue with the data from part I. Use the follows as the target and input variables: 
+
+*Target Variable*: Create the target variable taking value of 
+
+  - `low` if the total charge of a patient (`tot`) is smaller than the median of the total charge, and
+
+  - `high` otherwise. 
+```{r}
+median_tot<-median(df$tot)
+
+df$target<- ifelse(df$tot<=21854,"low","high")
+```
+
+*Input Variables*:
+
+  - "age","sex","raceethn","provider","moa","mod","admtype","campus", 'los'
+```{r}
+d <- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'los','target')]
+d <- d %>% filter(sex!=9)
+```
+
+-------
+
+1. Use `filter` function to filter out rows where `raceethn==''` or `admtype==''`. Make sure all the categorical variables are factor, numeric variables are numeric. Set Training : Testing Split = 10 : 90 
+```{r}
+library(tidyverse)
+d <- d %>% filter(raceethn!=' ') %>% filter(admtype!=' ')
+d$raceethn <- factor(d$raceethn)
+d$provider <- factor(d$provider)
+d$admtype <- factor(d$admtype)
+d$campus <- factor(d$campus)
+d$sex <- factor(d$sex)
+library(caret)
+splitIndex <- createDataPartition(d$target, p = .05,                           list = FALSE)
+train <- d[ splitIndex,]
+test <- d[-splitIndex,]
+```
+
+2. Train a decision tree using `rpart`.  Plot the decision tree. Plot the variable importance ranked by the tree. 
+```{r}
+#install.packages('rpart')
+#install.packages('rattle')
+library(rpart)
+tree_model <- rpart(target ~ ., data = train,
+                 control = rpart.control(maxdepth = 3))
+library(rattle)
+fancyRpartPlot(tree_model)
+tree_model$variable.importance
+barplot(tree_model$variable.importance)
+```
+
+3. Using caret for this question. Set `Training Control` to be: Use Cross-Validation of 5 folds across all models.  Train & tune at least 3 different models (i.e. three different values for `method=` in the train function of caret).  Plot the hyper-parameter tuning plots for each model. 
+```{r}
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+forest_ranger <- train(target~., data=train, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    na.action=na.omit)
+
+tree_approach <- train(target~., data=train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                       na.action=na.omit)
+glm <- train(target~., data=train, 
+                                method = "glm", 
+                                trControl = trControl,  na.action=na.omit)
+```
+
+4. Plot the comparison of the models in 3. 
+```{r}
+results <- resamples(list('Random Forest' = forest_ranger,
+                          'Decision Tree' = tree_approach,
+                          'Generalized Linear Model'= glm))
+bwplot(results)
+
+```
+
+5. What is your final selection for the model? Test the accuracy of your final model on the test data. 
+```{r}
+pred <- predict(forest_ranger, test)
+table(pred)
+cm <- confusionMatrix(data = pred, reference = as.factor(test$target), positive = "high")
+cm$overall[1]
+##The selection for the best model is Random Forest. This yielded an accuracy of .823.
+```
+
+6. Create another `target` variable (binary), decide the input variables and redo 1 to 5. 
+```{r}
+library(caret)
+library(tidyverse)
+df$Targ<- ifelse(df$los < 5,"short","long")
+df$Targ <- factor(df$Targ)
+ds <- df[,c("age","sex","raceethn","provider","moa","mod","admtype","campus", 'tot','Targ')]
+ds <- ds %>% filter(sex!=9) %>% filter(raceethn!=' ') %>% filter(admtype!=' ')
+```
+
+```{r}
+ds$provider <- factor(ds$provider)
+ds$admtype <- factor(ds$admtype)
+ds$campus <- factor(ds$campus)
+ds$sex <- factor(ds$sex)
+
+splitIndex1 <- createDataPartition(ds$Targ, p =.05,                           list = FALSE)
+train1 <- ds[ splitIndex1,]
+test1 <- ds[-splitIndex1,]
+trControl1 = trainControl(method = "cv",
+                         number = 5)
+```
+
+```{r}
+library(caret)
+forest_ranger1 <- train(Targ~., data=train1, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    na.action=na.omit)
+
+tree_approach1 <- train(Targ~., data=train1, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                       na.action=na.omit)
+glm1 <- train(Targ~., data=train1, 
+                                method = "glm", 
+                                trControl = trControl,  na.action=na.omit)
+
+results1 <- resamples(list('Random Forest' = forest_ranger1,
+                          'Decision Tree' = tree_approach1,
+                          'Generalized Linear Model'= glm1))
+bwplot(results1)
+```
+
+```{r}
+pred1 <- predict(forest_ranger1, test1)
+table(pred1)
+length(pred1)
+
+cm1 <- confusionMatrix(data = pred1, reference = test1$Targ, positive = "short")
+
+
+cm1$overall[1]
+##Accuracy is .84 for random forest.
+```
+
+7. Write a paragraph to summarize the section and give your comments on the results. 
+
+This section was used to make a statistical model to predict a certain variable. For the first part, we wanted to predict total cost and the second example was length of stay. These were interesting tests because they both showed that random forest was the best model for predicting. Using different types of models we were able to choose the most accurate predictor for each of the variables.
+-------
